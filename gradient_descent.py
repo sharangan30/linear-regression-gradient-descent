@@ -1,17 +1,19 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-x = [1,2,3,4,5]
+x1 = [1,2,3,4,5]
+x2 = [3,5,6,8,11]
 y = [1,4,6,7,10]
-m = 0
+m1 = 0
+m2 = 0
 b = 0
-n = len(x)
-learning_rate = .01
+n = len(x1)
+learning_rate = .015
 step = 0
 
 # Functions
-def error(x, y, m, b):
-    return (m*x+b-y)
+def error(x1, x2, y, m1, m2, b):
+    return (m1*x1 + m2*x2 +b-y)
 def MSE(length, errorList):
     value = 0
     for i in range(length):
@@ -27,43 +29,51 @@ def dervM(errorList, length, x):
 
 errorList = []
 for i in range(n):
-    errorList.append(error(x[i], y[i], m, b))
+    errorList.append(error(x1[i], x2[i], y[i], m1, m2, b))
 print(errorList)
 
 dervWRT_B = dervB(errorList, n)
 print(dervWRT_B)
 
-dervWRT_M = dervM(errorList, n, x)
-print(dervWRT_M)
+dervWRT_M1 = dervM(errorList, n, x1)
+print(dervWRT_M1)
 
-m = m - learning_rate * dervWRT_M
+dervWRT_M2 = dervM(errorList, n, x2)
+print(dervWRT_M2)
+
+m1 = m1 - learning_rate * dervWRT_M1
+m2 = m2 - learning_rate * dervWRT_M2
 b = b - learning_rate * dervWRT_B
 step += 1
 meanSquaredError = MSE(n, errorList)
 print("step ", step, ": ", meanSquaredError)
 
-while (((abs(dervWRT_B) + abs(dervWRT_M)) > 0.00001) and step <= 5000):
+while (((abs(dervWRT_B) + abs(dervWRT_M1) + abs(dervWRT_M2)) > 0.00001) and step <= 5500):
 
     errorList = []
     for i in range(n):
-        errorList.append(error(x[i], y[i], m, b))
+        errorList.append(error(x1[i], x2[i], y[i], m1, m2, b))
     dervWRT_B = dervB(errorList, n)
-    dervWRT_M = dervM(errorList, n, x)
-    m = m - learning_rate * dervWRT_M
+    dervWRT_M1 = dervM(errorList, n, x1)
+    dervWRT_M2 = dervM(errorList, n, x2)
+    m1 = m1 - learning_rate * dervWRT_M1
+    m2 = m2 - learning_rate * dervWRT_M2
     b = b - learning_rate * dervWRT_B
     step += 1
     meanSquaredError = MSE (n, errorList)
     print("step ", step, ": ", meanSquaredError)
 
-print (m, b)
+print (m1, m2, b)
 
-X = np.array(x).reshape(-1,1)
+X = np.array([x1,x2]).T
 Y = np.array(y)
 
 model = LinearRegression()
-model.fit(X, Y)
+model.fit(X,Y)
 print(f"Optimal slope(m): {model.coef_[0]}")
+print(f"Optimal slope(m): {model.coef_[1]}")
 print(f"Optimal y-intercept(b): {model.intercept_}")
 
-print(abs(m-model.coef_[0]) < 0.001)
+print(abs(m1-model.coef_[0]) < 0.001)
+print(abs(m2-model.coef_[1]) < 0.001)
 print(abs(b-model.intercept_) < 0.001)
